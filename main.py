@@ -1,7 +1,7 @@
 # -*- encoding: utf-8 -*-
 #
 
-def train(dir, n_clusters, n_iter):
+def train(dir, n_clusters, n_iter, epoch):
   from keras.applications.vgg16 import VGG16, preprocess_input
   from keras.preprocessing.image import load_img, img_to_array
   from keras.utils import to_categorical
@@ -16,7 +16,7 @@ def train(dir, n_clusters, n_iter):
   files = _samples(dir)[:100]
   images = np.array([img_to_array(load_img(f, target_size=(224, 224), interpolation="bicubic")) for f in files])
 
-  def _iterate(model):
+  for _ in range(epoch):
     layer_name = "flatten"
     features_model = Model(inputs=model.input, outputs=model.get_layer(layer_name).output)
     features_model.compile(loss="categorical_crossentropy", optimizer="RMSprop")
@@ -26,8 +26,6 @@ def train(dir, n_clusters, n_iter):
 
     y = to_categorical(clusters, n_clusters)
     model.fit(images, y)
-  
-  _iterate(model)
 
 def _cluster(features, n_clusters):
   from sklearn.cluster import KMeans
@@ -58,6 +56,7 @@ if __name__ == "__main__":
   parser.add_argument("dir", help="images directory")
   parser.add_argument("--cluster", "-c", dest="n_cluster", type=int, default=1000, help="the number of cluster")
   parser.add_argument("--iteration", "-i", dest="n_iter", type=int, default=100, help="the number of iteration")
+  parser.add_argument("--epoch", "-e", dest="epoch", type=int, default=1000, help="the number of epoch")
   args = parser.parse_args()
 
-  train(args.dir, args.n_cluster, args.n_iter)
+  train(args.dir, args.n_cluster, args.n_iter, args.epoch)
