@@ -4,6 +4,7 @@
 def train(dir, n_clusters, n_iter):
   from keras.applications.vgg16 import VGG16, preprocess_input
   from keras.preprocessing.image import load_img, img_to_array
+  from keras.utils import to_categorical
   from keras.models import Model
   import numpy as np
   import keras.datasets.cifar10
@@ -22,12 +23,17 @@ def train(dir, n_clusters, n_iter):
     features = features_model.predict(x=images)
     clusters = _cluster(features, n_clusters)
     print(clusters)
+
+    y = to_categorical(clusters, n_clusters)
+    model.fit(images, y)
   
   _iterate(model)
 
 def _cluster(features, n_clusters):
   from sklearn.cluster import KMeans
   kmeans = KMeans(n_clusters=n_clusters)
+  # TODO: if empty cluster is exist, readjust the centroid and reasign.
+  # How to set the centroids on KMeans?
   return kmeans.fit_predict(features)
 
 def _samples(dir, files=[]):
@@ -41,10 +47,11 @@ def _samples(dir, files=[]):
   return files
 
 if __name__ == "__main__":
-  import sys, keras, tensorflow
+  import sys, keras, tensorflow, sklearn
   print("Python %s" % sys.version)
   print("Keras %s" % keras.__version__)
   print("TesnforFlow %s" % tensorflow.__version__)
+  print("scikit-learn %s" % sklearn.__version__)
 
   import argparse
   parser = argparse.ArgumentParser(description="Unsupervised image clustering by DeepCluster")
